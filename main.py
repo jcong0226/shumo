@@ -223,18 +223,6 @@ def main():
         # 深度学习依赖的图像生成
         print("正在检查并生成深度学习所需的图像特征...")
         # 简单地复用之前的逻辑来生成DE信号的图像
-        df_de_filtered = metadata_df.dropna(subset=['DE_path']).copy()
-        processed_de_samples = preprocess_from_metadata(
-            metadata_df=df_de_filtered, signal_type='DE', target_fs=TARGET_FS,
-            window_size=WINDOW_SIZE, step_size=STEP_SIZE
-        )
-        image_dirs = {'ts': TIMESERIES_OUTPUT_DIR, 'sp': SPECTRUM_OUTPUT_DIR,
-                      'env_sp': ENVELOPE_SPECTRUM_OUTPUT_DIR, 'stft': STFT_OUTPUT_DIR,
-                      'cwt': CWT_OUTPUT_DIR}
-        generate_and_save_images(
-            processed_samples=processed_de_samples, dataset_type='source', signal_type='DE',
-            image_dirs=image_dirs, image_size=IMAGE_SIZE, target_fs=TARGET_FS
-        )
         
         # 深度学习模型训练
         de_ts_dir = os.path.join(TIMESERIES_OUTPUT_DIR, 'source', 'DE')
