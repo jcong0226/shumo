@@ -75,12 +75,16 @@ def train_and_evaluate_traditional_models(features_df: pd.DataFrame, selected_fe
         # This code is compatible with both.
         model = XGBClassifier(objective='multi:softprob', eval_metric='mlogloss', random_state=42)
     elif model_type == 'svm':
-        model = SVC(kernel='rbf', probability=True, random_state=42)
+        model = SVC(kernel='rbf', probability=True, random_state=42, class_weight='balanced')
     else:
         raise ValueError("模型类型必须是 'xgboost' 或 'svm'")
     
-    print("正在训练模型...")
-    model.fit(X_train, y_train)
+    if model_type == 'xgboost':
+        from sklearn.utils.class_weight import compute_sample_weight
+        sample_weights = compute_sample_weight(class_weight='balanced', y=y_train)
+        model.fit(X_train, y_train, sample_weight=sample_weights) # <--- Pass weights here
+    else:
+        model.fit(X_train, y_train)
     
     # 5. 保存训练好的模型
     model_path = os.path.join(model_save_dir, 'model.joblib')

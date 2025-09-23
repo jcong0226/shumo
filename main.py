@@ -11,7 +11,7 @@ from tqdm import tqdm
 # 数据加载与预处理
 from utils_loader import create_structured_dataset
 from utils_preprocess import preprocess_from_metadata
-
+from utils_handle_outliers import handle_outliers_iqr
 # 特征工程与分析
 from utils_comprehensive_features import extract_comprehensive_features
 from utils_feature_selection import perform_feature_selection
@@ -166,14 +166,31 @@ def main():
         handcrafted_features_df.to_csv(HANDCRAFTED_FEATURES_CSV_PATH, index=False)
         print(f"源域特征提取完成！已保存至: {HANDCRAFTED_FEATURES_CSV_PATH}")
 
+
+    # ==========================================================================
+    #                      【新增环节】步骤 3.5: 异常值处理
+    # ==========================================================================
+    print(f"\n{'='*25} 步骤 3.5: 处理源域特征异常值 {'='*25}")
+    # 在整个源域特征集上进行异常值处理
+    handcrafted_features_df_capped, outlier_bounds = handle_outliers_iqr(handcrafted_features_df)
+    
+    # 我们可以选择保存处理后的特征文件，以便后续直接使用
+    CAPPED_FEATURES_CSV_PATH = os.path.join(BASE_OUTPUT_DIR, 'features', 'handcrafted_features_capped.csv')
+    handcrafted_features_df_capped.to_csv(CAPPED_FEATURES_CSV_PATH, index=False)
+    print(f"已处理异常值的特征文件保存至: {CAPPED_FEATURES_CSV_PATH}")
+
+
     # --- 步骤 4: 特征分析与选择 (任务一) ---
     print(f"\n{'='*25} 步骤 4: 特征分析与选择 (任务一) {'='*25}")
+    # 【关键修改】使用处理完异常值的数据进行后续所有分析
     selection_results = perform_feature_selection(
-        features_df=handcrafted_features_df, n_features_mrmr=15, 
-        n_components_pca=10, save_dir=SAVE_MODEL_DIR
+        features_df=handcrafted_features_df_capped, # <--- 使用封顶后的DataFrame
+        n_features_mrmr=15, 
+        n_components_pca=10, 
+        save_dir=SAVE_MODEL_DIR
     )
     analyze_feature_stability(
-        handcrafted_features_df,
+        features_df=handcrafted_features_df_capped,
         text_save_path=os.path.join(TEXT_REPORTS_DIR, 'feature_stability_ranking.txt'),
         plot_save_path=os.path.join(MODEL_PLOTS_DIR, 'feature_stability_heatmap.png')
     )
@@ -222,6 +239,26 @@ def main():
         # 深度学习模型训练
         de_ts_dir = os.path.join(TIMESERIES_OUTPUT_DIR, 'source', 'DE')
         if not os.path.exists(de_ts_dir) or len(os.listdir(de_ts_dir)) == 0:
+            # 如果不存在或为空，则进入生成逻辑
+            print("图像特征不存在或不完整，开始生成...")
+        
+            # 简单地复用之前的逻辑来生成DE信号的图像
+            df_de_filtered = metadata_df.dropna(subset=['DE_path']).copy()
+            processed_de_samples = preprocess_from_metadata(
+                metadata_df=df_de_filtered, signal_type='DE', target_fs=TARGET_FS,
+                window_size=WINDOW_SIZE, step_size=STEP_SIZE
+            )
+            image_dirs = {'ts': TIMESERIES_OUTPUT_DIR, 'sp': SPECTRUM_OUTPUT_DIR,
+                        'env_sp': ENVELOPE_SPECTRUM_OUTPUT_DIR, 'stft': STFT_OUTPUT_DIR,
+                        'cwt': CWT_OUTPUT_DIR}
+            generate_and_save_images(
+                processed_samples=processed_de_samples, dataset_type='source', signal_type='DE',
+                image_dirs=image_dirs, image_size=IMAGE_SIZE, target_fs=TARGET_FS
+            )
+        else:
+            # 【跳过逻辑】如果存在且非空，则打印信息并跳过
+            print("检测到图像特征已存在，跳过生成步骤。")
+        if not os.path.exists(de_ts_dir) or len(os.listdir(de_ts_dir)) == 0:
             print("警告: 图像特征文件夹不存在或为空，跳过深度学习模型训练。")
         else:
             image_dirs_for_training = {
@@ -249,7 +286,12 @@ def main():
 
     # --- 步骤 7: 迁移学习预备分析 ---
     print(f"\n{'='*25} 步骤 7: 迁移学习预备分析 (衔接任务三) {'='*25}")
-    target_df = pd.read_csv(TARGET_HANDCRAFTED_FEATURES_CSV_PATH)
+    target_df_raw = pd.read_csv(TARGET_HANDCRAFTED_FEATURES_CSV_PATH)
+    print("\n--- 正在对目标域数据应用源域的异常值边界 ---")
+    # 使用源域数据 (handcrafted_features_df) 来计算边界，并应用到目标域数据上
+    target_df_capped, _ = handle_outliers_iqr(target_df_raw, train_df=handcrafted_features_df)
+
+    target_df = target_df_capped # 后续使用处理过的数据
     
     imputer_path = os.path.join(SAVE_MODEL_DIR, 'source_domain_imputer.joblib')
     scaler_path = os.path.join(SAVE_MODEL_DIR, 'source_domain_scaler.joblib')
