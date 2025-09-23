@@ -167,9 +167,7 @@ def main():
         print(f"源域特征提取完成！已保存至: {HANDCRAFTED_FEATURES_CSV_PATH}")
 
 
-    # ==========================================================================
-    #                      【新增环节】步骤 3.5: 异常值处理
-    # ==========================================================================
+    # ---步骤 3.5: 异常值处理---
     print(f"\n{'='*25} 步骤 3.5: 处理源域特征异常值 {'='*25}")
     # 在整个源域特征集上进行异常值处理
     handcrafted_features_df_capped, outlier_bounds = handle_outliers_iqr(handcrafted_features_df)
@@ -202,10 +200,10 @@ def main():
         'env_BPFI_1x_amp', 'env_BPFO_1x_amp', 'env_2BSF_1x_amp',
         'complexity_perm_entropy', 'wpt_energy_node_7'
     ]
-    plot_feature_distributions(handcrafted_features_df, key_features, 
+    plot_feature_distributions(handcrafted_features_df_capped, key_features, 
                                os.path.join(ANALYSIS_PLOTS_DIR, 'feature_distributions'), 'kde')
-    plot_feature_means_by_fault_type(handcrafted_features_df, key_features[:4], ANALYSIS_PLOTS_DIR)
-    plot_feature_correlation_heatmap(handcrafted_features_df, 30, ANALYSIS_PLOTS_DIR)
+    plot_feature_means_by_fault_type(handcrafted_features_df_capped, key_features[:4], ANALYSIS_PLOTS_DIR)
+    plot_feature_correlation_heatmap(handcrafted_features_df_capped, 30, ANALYSIS_PLOTS_DIR)
 
     # --- 步骤 5: 源域模型训练 (任务二) ---
     print(f"\n{'='*25} 步骤 5: 源域模型训练 (任务二) {'='*25}")
