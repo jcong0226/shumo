@@ -19,7 +19,7 @@ from utils_feature_stability import analyze_feature_stability
 from utils_robustness_analysis import evaluate_feature_robustness
 
 # 可视化
-from utils_analysis import analyze_and_plot_sample, analyze_and_compare_stft_cwt, plot_kurtogram
+from utils_analysis import analyze_and_plot_sample, plot_kurtogram
 from utils_visualization import plot_feature_distributions, plot_feature_means_by_fault_type, plot_feature_correlation_heatmap
 
 # 模型训练与评估
@@ -96,7 +96,7 @@ def main():
 
     # --- 步骤 2: 探索性信号分析 (任务一) ---
     print(f"\n{'='*25} 步骤 2: 探索性信号分析 (任务一) {'='*25}")
-    plot_dir = os.path.join(ANALYSIS_PLOTS_DIR, "signal_analysis_plots")
+    plot_dir = os.path.join(ANALYSIS_PLOTS_DIR)
     os.makedirs(plot_dir, exist_ok=True)
     if len(os.listdir(plot_dir)) > 0:
         print(f"检测到信号分析图已存在于 '{plot_dir}'，跳过此步骤。")
@@ -125,13 +125,6 @@ def main():
                         signal=signal_data, fs=sample_row['Sampling_Rate'], rpm=sample_row['RPM'],
                         title=f"Detailed Analysis of {name} Fault ({sig_type_to_analyze})",
                         signal_type=sig_type_to_analyze, save_dir=ANALYSIS_PLOTS_DIR
-                    )
-
-                    # 【新增调用】调用对比函数
-                    analyze_and_compare_stft_cwt(
-                        signal=signal_data, fs=sample_row['Sampling_Rate'],
-                        title=f"STFT vs CWT for {name} Fault ({sig_type_to_analyze})",
-                        save_dir=ANALYSIS_PLOTS_DIR
                     )
                     plot_kurtogram(
                         signal=signal_data, fs=sample_row['Sampling_Rate'],

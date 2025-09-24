@@ -60,12 +60,16 @@ def perform_feature_selection(features_df: pd.DataFrame, n_features_mrmr: int = 
         X_mrmr = X_var_df[selected_features_mrmr]
         
         print(f"\n使用mRMR选择出的前 {n_features_mrmr} 个轴承故障关键特征:")
-        for i, feature in enumerate(selected_features_mrmr[:10]):  # 显示前10个
+        for i, feature in enumerate(selected_features_mrmr[:15]):  # 显示前10个
             print(f"{i+1:2d}. {feature}")
         
         # 【新增】分析选中特征的类型分布
         selected_time_features = [f for f in selected_features_mrmr if f in time_domain_features]
         selected_freq_features = [f for f in selected_features_mrmr if f in freq_domain_features]
+        with open(os.path.join(save_dir, 'mrmr_selected_features.txt'), 'w', encoding='utf-8') as f:
+            for feature in selected_features_mrmr:
+                f.write(f"{feature}\n")
+        print(f"\n源域预处理模型和特征选择结果已保存至: {save_dir}")
         
         print(f"\nmRMR选中的特征类型分布:")
         print(f"  时域特征: {len(selected_time_features)} 个")
