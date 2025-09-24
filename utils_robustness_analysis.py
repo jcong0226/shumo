@@ -57,7 +57,7 @@ def evaluate_feature_robustness(features_df: pd.DataFrame, save_path: str = None
     report_content = "特征稳健性排名 (MMD分数越低越好):\n"
     print("\n" + report_content.strip())
     
-    for i, (feature, score) in enumerate(sorted_robust_features[:15]):
+    for i, (feature, score) in enumerate(sorted_robust_features[:30]):
         line = f"{i+1}. {feature}: {score:.6f}\n"
         report_content += line
         print(line.strip())

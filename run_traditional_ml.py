@@ -19,7 +19,7 @@ from utils_traditional_models import train_and_evaluate_traditional_models
 from utils_domain_analysis import visualize_domain_distribution, rank_features_by_transferability
 # 导入目标域数据处理脚本的功能
 from process_target_data import process_target_domain_data
-from sklearn.impute import SimpleImputer
+# from sklearn.impute import SimpleImputer
 
 
 # ==============================================================================
@@ -70,7 +70,7 @@ def main_traditional():
     # ==================== 步骤 2: 提取源域手工特征 ====================
     print(f"\n{'='*25} 步骤 2: 提取源域手工特征 {'='*25}")
     if os.path.exists(HANDCRAFTED_FEATURES_CSV_PATH):
-        print(f"检测到已存在的源域手工特征文件，直接加载。")
+        print("检测到已存在的源域手工特征文件，直接加载。")
         handcrafted_features_df = pd.read_csv(HANDCRAFTED_FEATURES_CSV_PATH)
     else:
         print("开始为源域信号提取全面的手工特征...")
@@ -158,9 +158,28 @@ def main_traditional():
         )
         
         print("\n--- 【重要】任务三策略建议 ---")
-        top_transferable_features = [feature for feature, score in transferability_ranking[:15]]
+        top_transferable_features = []
+        for feature, score in transferability_ranking[:36]:
+            if feature == 'time_std' or feature == 'time_variance':
+                continue
+            else:
+                top_transferable_features.append(feature)
         print("已生成特征可迁移性排名。对于任务三，建议使用以下高可迁移性特征集重新训练源域模型，以获得最佳迁移效果：")
         print(top_transferable_features)
+        
+    print(f"\n{'='*25} 步骤 8: 训练迁移专用模型 {'='*25}")
+
+    print("正在使用高可迁移性特征集重新训练源域模型，以备迁移...")
+    # 我们选择XGBoost作为迁移模型，因为它性能强大
+    train_and_evaluate_traditional_models(
+        features_df=handcrafted_features_df, 
+        selected_feature_names=top_transferable_features, 
+        model_type='xgboost', 
+        # 【关键】将模型保存到一个专门的目录中，以便后续调用
+        save_dir=os.path.join(SAVE_MODEL_DIR, 'transfer_model_xgboost'),
+        report_save_dir=MODEL_PLOTS_DIR, 
+        text_report_dir=TEXT_REPORTS_DIR
+    )
 
     print(f"\n{'='*25} 所有传统机器学习流程执行完毕 {'='*25}")
 
