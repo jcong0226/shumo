@@ -190,7 +190,36 @@ def train_evaluate_2d_resnet(image_dirs: dict, num_classes: int, save_dir: str, 
             all_preds.extend(preds.cpu().numpy())
             all_labels.extend(labels.cpu().numpy())
     
-    # ... (后续的报告和混淆矩阵绘制逻辑完全保持不变)
-    # ...
+    # --- 【新增】生成并保存详细的评估报告 ---
+    
+    # 1. 计算宏平均 F1 分数
+    macro_f1 = f1_score(all_labels, all_preds, average='macro')
+    
+    # 2. 生成并保存文本格式的分类报告
+    report = f"2D-ResNet (5-Channel) 模型的宏 F1 分数: {macro_f1:.4f}\n\n"
+    # 注意：这里的 target_names 需要使用之前保存的 full_class_names
+    report += classification_report(all_labels, all_preds, target_names=full_class_names)
+    print("\n" + report)
+    
+    if text_report_dir:
+        report_filename = os.path.join(text_report_dir, 'classification_report_2d_resnet.txt')
+        with open(report_filename, 'w', encoding='utf-8') as f:
+            f.write(report)
+        print(f"深度学习模型分类报告已保存至: {report_filename}")
+
+    # 3. 生成并保存混淆矩阵图像
+    cm = confusion_matrix(all_labels, all_preds)
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=full_class_names)
+    disp.plot(cmap=plt.cm.Blues)
+    plt.title('2D-ResNet (5-Channel) Confusion Matrix')
+    
+    if report_save_dir:
+        cm_path = os.path.join(report_save_dir, 'confusion_matrix_2d_resnet.png')
+        plt.savefig(cm_path)
+        plt.close()
+        print(f"深度学习模型混淆矩阵已保存至: {cm_path}")
+
+    # 函数最终返回模型和核心评估指标
+    return model, macro_f1
     
     return model, f1_score(all_labels, all_preds, average='macro')
