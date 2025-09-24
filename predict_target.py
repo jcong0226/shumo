@@ -29,21 +29,37 @@ def predict_and_label_target_data():
     # --- 4. 准备预测数据 ---
     #    【核心】必须使用模型训练时所用的那一组特征
     #    XGBoost模型保存了特征名称，我们可以直接获取
-    feature_names = [
-        'time_rms', 'env_BPFO_3x_ratio', 'env_BPFI_2x_ratio', 
-        'time_moment_6', 'env_2BSF_1x_ratio', 'time_skew', 'time_moment_5', 'time_peak', 
-        'time_crest_factor', 'time_clearance_factor', 'time_impulse_factor', 'time_kurtosis','time_p2p',
-        'freq_skew', 'time_shape_factor', 'time_mean', 'env_2BSF_3x_ratio', 'time_mean_abs',
-        'env_2BSF_2x_amp', 'env_2BSF_2x_ratio', 'env_BPFO_1x_ratio', 'freq_kurtosis', 'env_BPFI_1x_ratio',
-        'env_2BSF_3x_amp', 'env_BPFO_3x_amp', 'env_BPFO_2x_ratio', 'env_BPFI_3x_ratio', 'wpt_energy_node_0',
-        'segment_index', 'env_BPFI_2x_amp', 'freq_rmsf', 'env_2BSF_1x_amp', 'freq_std', 'env_BPFO_1x_amp'
-        ]
+    # feature_names = [
+    #     'time_rms', 'env_BPFO_3x_ratio', 'env_BPFI_2x_ratio', 
+    #     'time_moment_6', 'env_2BSF_1x_ratio', 'time_skew', 'time_moment_5', 'time_peak', 
+    #     'time_crest_factor', 'time_clearance_factor', 'time_impulse_factor', 'time_kurtosis','time_p2p',
+    #     'freq_skew', 'time_shape_factor', 'time_mean', 'env_2BSF_3x_ratio', 'time_mean_abs',
+    #     'env_2BSF_2x_amp', 'env_2BSF_2x_ratio', 'env_BPFO_1x_ratio', 'freq_kurtosis', 'env_BPFI_1x_ratio',
+    #     'env_2BSF_3x_amp', 'env_BPFO_3x_amp', 'env_BPFO_2x_ratio', 'env_BPFI_3x_ratio', 'wpt_energy_node_0',
+    #     'segment_index', 'env_BPFI_2x_amp', 'freq_rmsf', 'env_2BSF_1x_amp', 'freq_std', 'env_BPFO_1x_amp'
+    #     ]
     # feature_names = [
     #     'time_rms','env_BPFO_3x_ratio', 'env_BPFI_2x_ratio', 
     #     'time_moment_6', 'env_2BSF_1x_ratio', 'time_skew', 'time_moment_5', 'time_peak', 
     #     'time_crest_factor', 'time_clearance_factor', 'time_impulse_factor', 'time_kurtosis','time_p2p',
     #     'freq_skew', 
     #     ]
+    # feature_names = [
+    #     'time_rms', 'env_BPFO_3x_ratio', 'env_BPFI_2x_ratio', 
+    #     'time_moment_6', 'env_2BSF_1x_ratio', 'time_skew', 'time_moment_5', 'time_peak', 
+    #     'time_crest_factor', 'time_clearance_factor', 'time_impulse_factor', 'time_kurtosis','time_p2p',
+    #     'freq_skew', 'time_shape_factor', 'time_mean', 'env_2BSF_3x_ratio', 'time_mean_abs',
+    #     'env_2BSF_2x_amp', 'env_2BSF_2x_ratio', 'env_BPFO_1x_ratio', 'freq_kurtosis', 'env_BPFI_1x_ratio',
+    #     'env_2BSF_3x_amp', 'env_BPFO_3x_amp', 'env_BPFO_2x_ratio', 'env_BPFI_3x_ratio', 'wpt_energy_node_0',
+    #     'segment_index', 'env_BPFI_2x_amp', 'freq_rmsf', 'env_2BSF_1x_amp', 'freq_std', 'env_BPFO_1x_amp'
+    # ]
+    feature_names = [
+        'time_rms', 'env_BPFI_2x_ratio', 'env_BPFO_3x_ratio', 'env_2BSF_1x_ratio', 'time_moment_6', 'time_moment_5',
+        'freq_kurtosis', 'time_skew', 'time_kurtosis', 'time_peak', 'time_crest_factor', 'time_clearance_factor', 'time_impulse_factor',
+        'env_2BSF_2x_amp', 'freq_skew', 'time_shape_factor', 'time_p2p', 'env_BPFO_1x_ratio', 'env_BPFI_1x_ratio', 'time_mean_abs', 'env_2BSF_3x_amp',
+        'time_mean', 'env_2BSF_3x_ratio', 'env_2BSF_2x_ratio', 'env_BPFO_2x_ratio', 'env_BPFI_3x_ratio', 'env_BPFO_3x_amp', 'env_BPFI_2x_amp',
+        'env_BPFO_1x_amp', 'env_2BSF_1x_amp'
+    ]
     print(f"\n模型使用的特征 ({len(feature_names)}个): \n{feature_names}")
     X_target_raw = target_features_df[feature_names]
     X_target_scaled = scaler.transform(X_target_raw)

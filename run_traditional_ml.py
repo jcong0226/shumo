@@ -159,7 +159,7 @@ def main_traditional():
         
         print("\n--- 【重要】任务三策略建议 ---")
         top_transferable_features = []
-        for feature, score in transferability_ranking[:36]:
+        for feature, score in transferability_ranking[:32]:
             if feature == 'time_std' or feature == 'time_variance':
                 continue
             else:
